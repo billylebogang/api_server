@@ -3,6 +3,8 @@ const cors = require('cors');
 const fs = require('fs');
 const mysql = require('mysql2')
 const bodyparser = require('body-parser')
+const swaggerJsDoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
 const app = express();
 require('dotenv').config();
 
@@ -14,8 +16,39 @@ app.use(cors({
   credentials: true
 }))
 
-// use middleware to serve static images
-app.use(express.static('public'))
+
+/**
+ * @swagger
+ * /:
+ *  get:
+ *      summary: the first ever route
+ *      description: to get to the home
+ *      responses:
+ *          200:
+ *              description: return the main home
+ */
+
+
+
+const options = {
+    definition: {
+        openapi : '3.0.0',
+        info : {
+            title: 'API server test',
+            version: '1.0.0'
+        },
+        servers : [
+            {
+                url: 'http://localhost:3030/'
+            }
+            
+        ]
+    },
+    apis: ['./src/server.js']
+}
+
+const swaggerSpec = swaggerJsDoc(options)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec) )
 
 
 let HOST = process.env.HOST;
