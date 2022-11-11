@@ -7,6 +7,8 @@ const swaggerJsDoc = require('swagger-jsdoc')
 const swaggerUi = require('swagger-ui-express')
 const app = express();
 require('dotenv').config();
+const axios = require('axios');
+const htmlToImage = require('html-to-image');
 
 app.use(bodyparser.json())
 
@@ -57,13 +59,13 @@ let PASSWORD = process.env.PASSWORD;
 let DATABASE = process.env.DATABASE;
 let PORT= process.env.DATABASEPORT;
 
-const mysqlConnection = mysql.createConnection({
-    host:HOST,
-    user:USER,
-    password:PASSWORD,
-    database: DATABASE,
-    port:PORT
-})
+// const mysqlConnection = mysql.createConnection({
+//     host:HOST,
+//     user:USER,
+//     password:PASSWORD,
+//     database: DATABASE,
+//     port:PORT
+// })
 
 /** 
  * @swagger
@@ -101,14 +103,108 @@ const mysqlConnection = mysql.createConnection({
  *                                  $ref '#components/schema/user
 */
 
+/**
+ *     htmlToImage.toJpeg(CertificateTemplate , {quality: 0.96})
+    .then( (dataUrl) => {
+        let img = new Image();
+        img.src = dataUrl;
+        res.sendFile(img);
+       // donwload(dataUrl,"img.png");
+        
+    }).catch ( (err) => {
+        console.log(err);
+        res.send("Error");
+    })
+ */
+
+
+
+
+const CertificateTemplate = `
+<>
+<div class="card">
+  <img src="img.jpg" alt="John" style="width:100%">
+  <h1>John Doe</h1>
+  <p class="title">CEO & Founder, Example</p>
+  <p>Harvard University</p>
+  <a href="#"><i class="fa fa-dribbble"></i></a>
+  <a href="#"><i class="fa fa-twitter"></i></a>
+  <a href="#"><i class="fa fa-linkedin"></i></a>
+  <a href="#"><i class="fa fa-facebook"></i></a>
+  <p><button>Contact</button></p>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    margin: auto;
+    text-align: center;
+  }
+  
+  .title {
+    color: grey;
+    font-size: 18px;
+  }
+  
+  button {
+    border: none;
+    outline: 0;
+    display: inline-block;
+    padding: 8px;
+    color: white;
+    background-color: #000;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    font-size: 18px;
+  }
+  
+  a {
+    text-decoration: none;
+    font-size: 22px;
+    color: black;
+  }
+  
+  button:hover, a:hover {
+    opacity: 0.7;
+  }
+
+</style>
+</>
+`
+
+async function createImage() {
+    const payload = { html: CertificateTemplate,
+    css: "div { background-color: blue; }" };
+  
+    let headers = { auth: {
+      username: '79cc3397-0c5f-4f45-a920-e52450d46e63',
+      password: '678d7481-95a7-49fc-a91b-b8aca1a7e6d7'
+    },
+    headers: {
+      'Content-Type': 'application/json'
+    }
+    }
+    try {
+      const response = await axios.post('https://hcti.io/v1/image/?dl=1', JSON.stringify(payload), headers);
+      console.log(response.data.url);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+
 
 
 app.get('/', (req, res) => {    
     res.send("Welcome home")
+    createImage()  
+
   })
 
   
-app.get('/api/users', (req, res) => {
+/*app.get('/api/users', (req, res) => {
 
     try {
         mysqlConnection.query(" select * from users", (err, rows, fields) => {
@@ -211,7 +307,7 @@ app.put('/api/users/', (req, res) => {
         res.send(error).status(500) 
     } 
 
-})
+})*/
 
 
 
